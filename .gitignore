@@ -1,0 +1,28 @@
+# Binary
+ds_updater
+
+# Build output
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Coverage output
+*.out
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Dependency directories
+vendor/
+
+# macOS
+.DS_Store
+
+# vs
+.vscode/
