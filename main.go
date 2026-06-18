@@ -35,8 +35,12 @@ func (k DSKey) String() string {
 		k.KeyTag, k.Algorithm, k.DigestType, k.Digest)
 }
 func loadConfig() Config {
+	if len(os.Args) != 2 {
+		log.Fatalf("Usage: %s mydomain.example", os.Args[0])
+	}
 	cfg := Config{
-		Domain:    os.Getenv("DOMAIN"),
+		// domain from command-line arg or env var; API credentials and resolver from env vars
+		Domain:    os.Args[1],
 		Resolver:  os.Getenv("RESOLVER"),
 		APIURL:    os.Getenv("API_URL"),
 		APIKey:    os.Getenv("API_KEY"),
