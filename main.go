@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -132,30 +134,24 @@ func containsKey(set []DSKey, key DSKey) bool {
 	}
 	return false
 }
-func postRecord(cfg Config, key DSKey) error {
-	apiRoute := "dns/createDnssecRecord"
+func deleteRecord(cfg Config, key DSKey) error {
+	apiRoute := "dns/deleteDnssecRecord"
 	domain := strings.TrimSuffix(cfg.Domain, ".") // API expects domain without trailing dot
-	requestUrl := fmt.Sprintf("%s/%s/%s", cfg.APIURL, apiRoute, domain)
-	log.Printf("CDS record has no matching DS record (%s) – posting to %s", key, requestUrl)
-	//		"apikey":       "` + cfg.APIKey + `",
-	//	"secretapikey": "` + cfg.APISecret + `",
-
-	payload := strings.NewReader(`{
-		"apikey":       "",
-		"secretapikey": "",
-		"key_tag":      ` + fmt.Sprint(key.KeyTag) + `,
-		"algorithm":    ` + fmt.Sprint(key.Algorithm) + `,
-		"digest_type":  ` + fmt.Sprint(key.DigestType) + `,
-		"digest":       "` + key.Digest + `",
-		"maxSigLife": "",
-		"keyDataFlags": "",
-		"keyDataProtocol": "",
-		"keyDataAlgo": "",
-		"keyDataPubKey": ""
-	}`)
-	req, err := http.NewRequest("POST", requestUrl, payload)
+	requestUrl := fmt.Sprintf("%s/%s/%s/%d", cfg.APIURL, apiRoute, domain, key.KeyTag)
+	log.Printf("DS record has no matching CDS record (%s) – deleting from %s", key, requestUrl)
+	// Keytag is a path param and not included in the JSON body
+	body := map[string]string{
+		"apikey":       cfg.APIKey,
+		"secretapikey": cfg.APISecret,
+	}
+	jsonBody, err := json.Marshal(body)
 	if err != nil {
 		return fmt.Errorf("marshal payload: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", requestUrl, bytes.NewReader(jsonBody))
+	if err != nil {
+		return fmt.Errorf("create request: %w", err)
 	}
 
 	req.Header.Add("Content-Type", "application/json")
@@ -170,7 +166,47 @@ func postRecord(cfg Config, key DSKey) error {
 
 	if resp.StatusCode != http.StatusOK {
 		respBody, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("API error: status %d, response: %s payload: %s", resp.StatusCode, string(respBody), payload)
+		return fmt.Errorf("API error: status %d, response: %s", resp.StatusCode, string(respBody))
+	}
+	return nil
+}
+func postRecord(cfg Config, key DSKey) error {
+	apiRoute := "dns/createDnssecRecord"
+	domain := strings.TrimSuffix(cfg.Domain, ".") // API expects domain without trailing dot
+	requestUrl := fmt.Sprintf("%s/%s/%s", cfg.APIURL, apiRoute, domain)
+	log.Printf("CDS record has no matching DS record (%s) – posting to %s", key, requestUrl)
+
+	body := map[string]string{
+		"apikey":       cfg.APIKey,
+		"secretapikey": cfg.APISecret,
+		"keyTag":       fmt.Sprint(key.KeyTag),
+		"alg":          fmt.Sprint(key.Algorithm),
+		"digestType":   fmt.Sprint(key.DigestType),
+		"digest":       key.Digest,
+	}
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("marshal payload: %w", err)
+	}
+
+	req, err := http.NewRequest("POST", requestUrl, bytes.NewReader(jsonBody))
+	if err != nil {
+		return fmt.Errorf("create request: %w", err)
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("X-API-Key", cfg.APIKey)
+	req.Header.Add("X-Secret-API-Key", cfg.APISecret)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("execute request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("API error: status %d, response: %s", resp.StatusCode, string(respBody))
 	}
 	return nil
 }
@@ -217,5 +253,17 @@ func main() {
 		log.Printf("CDS and DS records are in sync – no action needed")
 	} else {
 		log.Printf("CDS and DS records are not in sync – posted missing DS records to parent")
+	}
+	// DS records not present as CDS → optionally delete; warn otherwise.
+	for _, ds := range dsKeys {
+		if containsKey(cdsKeys, ds) {
+			continue
+		}
+		if cfg.DeleteDS {
+			log.Printf("DS record has no matching CDS record (%s) – deletion not implemented in this example", ds)
+			// Implement deletion logic here if the API supports it.
+		} else {
+			log.Printf("WARNING: DS record has no matching CDS record (%s) – manual cleanup may be needed", ds)
+		}
 	}
 }
