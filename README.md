@@ -14,14 +14,13 @@ All configuration is provided through environment variables.
 
 | Variable    | Required | Default      | Description |
 |-------------|----------|--------------|-------------|
-| `DOMAIN`    | yes      |              | Domain name to check, e.g. `example.com` |
 | `RESOLVER`  | no       | `8.8.8.8:53` | DNS resolver address |
 | `API_URL`   | no       |              | URL to POST when a CDS record has no matching DS record |
 | `API_KEY`   | no       |              | API key sent in the POST body |
 | `API_SECRET`| no       |              | API secret sent in the POST body |
 | `DELETE_DS` | no       | `false`      | Set to `true` to DELETE DS records that have no matching CDS record |
 
-When `DELETE_DS=true`, the delete URL is derived from `API_URL` by replacing the action segment with `deleteDnssecRecord` and appending `/{domain}/{keyTag}`.
+When `DELETE_DS=true`, the delete URL is derived from `API_URL` by replacing the action segment with `dns/deleteDnssecRecord` and appending `/{domain}/{keyTag}`.
 
 ## Building
 
@@ -34,9 +33,9 @@ go build -o ds_updater .
 ```sh
 export DELETE_DS=true
 export API_URL="https://api.porkbun.com/api/json/v3/addDnssecRecord/"
-export DOMAIN=example.com 
 
-API_KEY=mykey API_SECRET=mysecret ./ds_updater
+
+API_KEY=mykey API_SECRET=mysecret ./ds_updater <domain>
 ```
 
 ## Testing
