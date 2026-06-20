@@ -32,8 +32,7 @@ go build -o ds_updater .
 
 ```sh
 export DELETE_DS=true
-export API_URL="https://api.porkbun.com/api/json/v3/addDnssecRecord/"
-
+export API_URL="https://api.porkbun.com/api/json/v3/"
 
 API_KEY=mykey API_SECRET=mysecret ./ds_updater <domain>
 ```
