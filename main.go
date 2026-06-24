@@ -260,8 +260,12 @@ func main() {
 			continue
 		}
 		if cfg.DeleteDS {
-			log.Printf("DS record has no matching CDS record (%s) – deletion not implemented in this example", ds)
-			// Implement deletion logic here if the API supports it.
+			log.Printf("DS record has no matching CDS record (%s)", ds)
+			if err := deleteRecord(cfg, ds); err != nil {
+				log.Printf("ERROR: failed to delete DS record: %v", err)
+			} else {
+				log.Printf("successfully deleted DS record: %s", ds)
+			}
 		} else {
 			log.Printf("WARNING: DS record has no matching CDS record (%s) – manual cleanup may be needed", ds)
 		}
