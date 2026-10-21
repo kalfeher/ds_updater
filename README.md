@@ -14,7 +14,7 @@ All configuration is provided through environment variables.
 
 | Variable    | Required | Default      | Description |
 |-------------|----------|--------------|-------------|
-| `RESOLVER`  | no       | `8.8.8.8:53` | DNS resolver address |
+| `RESOLVER`  | no       | `1.1.1.1:53` | DNS resolver address |
 | `API_URL`   | no       |              | URL to POST when a CDS record has no matching DS record |
 | `API_KEY`   | no       |              | API key sent in the POST body |
 | `API_SECRET`| no       |              | API secret sent in the POST body |

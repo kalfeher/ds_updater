@@ -1,6 +1,6 @@
 module ds_updater
 
-go 1.24.0
+go 1.27.1
 
 require github.com/miekg/dns v1.1.72
 

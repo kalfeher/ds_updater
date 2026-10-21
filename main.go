@@ -243,7 +243,7 @@ func main() {
 		inSync = false
 
 		if err := postRecord(cfg, cds); err != nil {
-			log.Printf("ERROR: failed to post DS record: %v", err)
+			log.Fatalf("ERROR: failed to post DS record: %v", err)
 		} else {
 			log.Printf("successfully posted DS record: %s", cds)
 		}
@@ -262,7 +262,7 @@ func main() {
 		if cfg.DeleteDS {
 			log.Printf("DS record has no matching CDS record (%s)", ds)
 			if err := deleteRecord(cfg, ds); err != nil {
-				log.Printf("ERROR: failed to delete DS record: %v", err)
+				log.Fatalf("ERROR: failed to delete DS record: %v", err)
 			} else {
 				log.Printf("successfully deleted DS record: %s", ds)
 			}
