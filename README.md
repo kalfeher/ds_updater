@@ -16,8 +16,8 @@ All configuration is provided through environment variables.
 |-------------|----------|--------------|-------------|
 | `RESOLVER`  | no       | `1.1.1.1:53` | DNS resolver address |
 | `API_URL`   | no       |              | URL to POST when a CDS record has no matching DS record |
-| `API_KEY`   | no       |              | API key sent in the POST body |
-| `API_SECRET`| no       |              | API secret sent in the POST body |
+| `API_KEY`   | yes      |              | API key sent in the POST body |
+| `API_SECRET`| yes      |              | API secret sent in the POST body |
 | `DELETE_DS` | no       | `false`      | Set to `true` to DELETE DS records that have no matching CDS record |
 
 When `DELETE_DS=true`, the delete URL is derived from `API_URL` by replacing the action segment with `dns/deleteDnssecRecord` and appending `/{domain}/{keyTag}`.
